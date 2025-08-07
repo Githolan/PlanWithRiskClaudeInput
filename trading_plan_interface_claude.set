@@ -1,0 +1,49 @@
+
+//+------------------------------------------------------------------+
+//|                    PlanWithRisk Input Parameters                 |
+//|                         Generated Configuration                  |
+//+------------------------------------------------------------------+
+
+// === TRADE SETUP ===
+TradeSymbol = 1;        // Symbol to Trade
+Plan = 0;                     // Direction: LONG/SHORT
+EntryType = 0;           // Entry Type
+LimitBehavior = 0;   // Limit Behavior
+EntryPoint = 3378;                            // Entry Price
+
+// === RISK MANAGEMENT ===
+StopLoss = 3341;                                // Stop Loss Price
+TotalVolume = 0;                          // Fixed Volume
+RiskPercent = 2;                          // Risk Percent of Equity
+
+// === TAKE PROFITS ===
+TP_1 = 3401;                                         // Take Profit 1
+TP_2 = 3411;                                         // Take Profit 2
+TP_3 = 3422;                                         // Take Profit 3
+TP_4 = 3433;                                         // Take Profit 4
+TP_5 = 3434;                                         // Take Profit 5
+
+// === SETTINGS ===
+Slippage = -1;                                // Slippage
+OrderComment = "PlanWithRisk";                     // Order Comment
+
+//+------------------------------------------------------------------+
+//| Trading Plan Summary                                             |
+//+------------------------------------------------------------------+
+/*
+SYMBOL: SYMBOL_EURUSD
+DIRECTION: PLAN_LONG
+ENTRY TYPE: ENTRY_LIMIT
+ENTRY PRICE: 3378
+STOP LOSS: 3341
+RISK: 2% (calculated)
+
+TAKE PROFITS:
+TP1: 3401
+TP2: 3411
+TP3: 3422
+TP4: 3433
+TP5: 3434
+
+Generated: 7/8/2025, 01:21:15
+*/

@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlanWithRisk - Trading Plan Interface</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .form-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .form-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            border-left: 4px solid #2a5298;
+        }
+
+        .section-title {
+            font-size: 1.3em;
+            color: #2a5298;
+            margin-bottom: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title::before {
+            content: "⚙️";
+            margin-right: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #2a5298;
+            box-shadow: 0 0 0 3px rgba(42, 82, 152, 0.1);
+        }
+
+        .validation-message {
+            margin-top: 5px;
+            padding: 8px;
+            border-radius: 5px;
+            font-size: 12px;
+            display: none;
+        }
+
+        .validation-error {
+            background: #ffe6e6;
+            color: #d32f2f;
+            border: 1px solid #ffcdd2;
+        }
+
+        .validation-success {
+            background: #e8f5e8;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+
+        .validation-warning {
+            background: #fff3e0;
+            color: #f57c00;
+            border: 1px solid #ffcc02;
+        }
+
+        .output-section {
+            background: #263238;
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 15px;
+            font-family: 'Courier New', monospace;
+            margin-top: 20px;
+            min-height: 300px;
+            overflow-y: auto;
+        }
+
+        .output-title {
+            color: #81c784;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #2a5298, #1e3c72);
+            color: white;
+            box-shadow: 0 5px 15px rgba(42, 82, 152, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(42, 82, 152, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #757575, #424242);
+            color: white;
+            box-shadow: 0 5px 15px rgba(117, 117, 117, 0.3);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(117, 117, 117, 0.4);
+        }
+
+        .btn-export {
+            background: linear-gradient(45deg, #4caf50, #388e3c);
+            color: white;
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .btn-export:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-valid { background: #4caf50; }
+        .status-invalid { background: #f44336; }
+        .status-warning { background: #ff9800; }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+
+        .risk-calculator {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+
+        .risk-result {
+            font-weight: bold;
+            color: #1976d2;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 PlanWithRisk v2.0</h1>
+            <p>Advanced Trading Plan Configuration Interface</p>
+        </div>
+
+        <div class="form-container">
+            <form id="tradingPlanForm">
+                <div class="form-grid">
+                    <!-- Trade Setup Section -->
+                    <div class="form-section">
+                        <h3 class="section-title">Trade Setup</h3>
+                        
+                        <div class="form-group">
+                            <label for="tradeSymbol">Symbol to Trade:</label>
+                            <select id="tradeSymbol" name="tradeSymbol">
+                                <option value="SYMBOL_CURRENT">Current Chart Symbol</option>
+                                <option value="SYMBOL_EURUSD">EUR/USD</option>
+                                <option value="SYMBOL_GBPUSD">GBP/USD</option>
+                                <option value="SYMBOL_USDJPY">USD/JPY</option>
+                                <option value="SYMBOL_USDCHF">USD/CHF</option>
+                                <option value="SYMBOL_AUDUSD">AUD/USD</option>
+                                <option value="SYMBOL_USDCAD">USD/CAD</option>
+                                <option value="SYMBOL_NZDUSD">NZD/USD</option>
+                                <option value="SYMBOL_EURGBP">EUR/GBP</option>
+                                <option value="SYMBOL_EURJPY">EUR/JPY</option>
+                                <option value="SYMBOL_GBPJPY">GBP/JPY</option>
+                                <option value="SYMBOL_XAUUSD">Gold (XAU/USD)</option>
+                                <option value="SYMBOL_XAGUSD">Silver (XAG/USD)</option>
+                                <option value="SYMBOL_US30">Dow Jones</option>
+                                <option value="SYMBOL_SPX500">S&P 500</option>
+                                <option value="SYMBOL_NDX100">NASDAQ</option>
+                            </select>
+                            <div class="validation-message" id="tradeSymbol-validation"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="plan">Direction:</label>
+                            <select id="plan" name="plan">
+                                <option value="PLAN_LONG">LONG (Buy)</option>
+                                <option value="PLAN_SHORT">SHORT (Sell)</option>
+                            </select>
+                            <div class="validation-message" id="plan-validation"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="entryType">Entry Type:</label>
+                            <select id="entryType" name="entryType">
+                                <option value="ENTRY_LIMIT">LIMIT Order</option>
+                                <option value="ENTRY_MARKET">MARKET Order</option>
+                            </select>
+                            <div class="validation-message" id="entryType-validation"></div>
+                        </div>
+
+                        <div class="form-group" id="limitBehaviorGroup">
+                            <label for="limitBehavior">Limit Behavior:</label>
+                            <select id="limitBehavior" name="limitBehavior">
+                                <option value="LIMIT_STANDARD">Standard Limit</option>
+                                <option value="LIMIT_BREAKOUT">Breakout Limit</option>
+                            </select>
+                            <div class="validation-message" id="limitBehavior-validation"></div>
+                        </div>
+
+                        <div class="form-group" id="entryPointGroup">
+                            <label for="entryPoint">Entry Price:</label>
+                            <input type="number" id="entryPoint" name="entryPoint" step="0.00001" placeholder="Entry price (ignored if Market)">
+                            <div class="validation-message" id="entryPoint-validation"></div>
+                        </div>
+                    </div>
+
+                    <!-- Risk Management Section -->
+                    <div class="form-section">
+                        <h3 class="section-title">Risk Management</h3>
+                        
+                        <div class="form-group">
+                            <label for="stopLoss">Stop Loss Price:</label>
+                            <input type="number" id="stopLoss" name="stopLoss" step="0.00001" placeholder="Stop loss price">
+                            <div class="validation-message" id="stopLoss-validation"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="totalVolume">Fixed Volume (0 = use Risk%):</label>
+                            <input type="number" id="totalVolume" name="totalVolume" step="0.001" value="0" min="0">
+                            <div class="validation-message" id="totalVolume-validation"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="riskPercent">Risk Percent of Equity:</label>
+                            <input type="number" id="riskPercent" name="riskPercent" step="0.1" value="2.0" min="0.1" max="100">
+                            <div class="validation-message" id="riskPercent-validation"></div>
+                        </div>
+
+                        <div class="risk-calculator">
+                            <strong>Risk Calculator:</strong>
+                            <div class="risk-result" id="riskCalculation">
+                                Enter values to see risk calculation
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Take Profits Section -->
+                    <div class="form-section">
+                        <h3 class="section-title">Take Profits</h3>
+                        
+                        <div class="form-group">
+                            <label for="tp1">Take Profit 1:</label>
+                            <input type="number" id="tp1" name="tp1" step="0.00001" placeholder="First take profit level">
+                            <div class="validation-message" id="tp1-validation"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="tp2">Take Profit 2:</label>
+                            <input type="number" id="tp2" name="tp2" step="0.00001" placeholder="Second take profit level">
+                            <div class="validation-message" id="tp2-validation"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="tp3">Take Profit 3:</label>
+                            <input type="number" id="tp3" name="tp3" step="0.00001" placeholder="Third take profit level">
+                            <div class="validation-message" id="tp3-validation"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="tp4">Take Profit 4:</label>
+                            <input type="number" id="tp4" name="tp4" step="0.00001" placeholder="Fourth take profit level">
+                            <div class="validation-message" id="tp4-validation"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="tp5">Take Profit 5:</label>
+                            <input type="number" id="tp5" name="tp5" step="0.00001" placeholder="Fifth take profit level">
+                            <div class="validation-message" id="tp5-validation"></div>
+                        </div>
+                    </div>
+
+                    <!-- Settings Section -->
+                    <div class="form-section">
+                        <h3 class="section-title">Settings</h3>
+                        
+                        <div class="form-group">
+                            <label for="slippage">Slippage (-1 = auto):</label>
+                            <input type="number" id="slippage" name="slippage" value="-1" min="-1">
+                            <div class="validation-message" id="slippage-validation"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="orderComment">Order Comment:</label>
+                            <input type="text" id="orderComment" name="orderComment" value="PlanWithRisk" maxlength="50">
+                            <div class="validation-message" id="orderComment-validation"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button type="button" class="btn btn-primary" id="validateBtn">
+                        <span class="status-indicator status-invalid" id="validationStatus"></span>
+                        Validate Plan
+                    </button>
+                    <button type="button" class="btn btn-secondary" id="clearBtn">Clear Form</button>
+                    <button type="button" class="btn btn-export" id="exportBtn" disabled>Export to MT4</button>
+                </div>
+            </form>
+
+            <div class="output-section">
+                <div class="output-title">📊 MetaTrader 4 Input Parameters</div>
+                <pre id="mt4Output">// Click "Validate Plan" to generate MT4 input parameters...</pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class TradingPlanValidator {
+            constructor() {
+                this.form = document.getElementById('tradingPlanForm');
+                this.validationStatus = document.getElementById('validationStatus');
+                this.exportBtn = document.getElementById('exportBtn');
+                this.output = document.getElementById('mt4Output');
+                this.isValid = false;
+                
+                this.initializeEventListeners();
+                this.toggleLimitFields();
+            }
+
+            initializeEventListeners() {
+                // Real-time validation on input changes
+                this.form.addEventListener('input', () => this.validateForm());
+                this.form.addEventListener('change', () => this.validateForm());
+                
+                // Button events
+                document.getElementById('validateBtn').addEventListener('click', () => this.validateAndGenerate());
+                document.getElementById('clearBtn').addEventListener('click', () => this.clearForm());
+                document.getElementById('exportBtn').addEventListener('click', () => this.exportToMT4());
+                
+                // Entry type specific handling
+                document.getElementById('entryType').addEventListener('change', () => this.toggleLimitFields());
+            }
+
+            toggleLimitFields() {
+                const entryType = document.getElementById('entryType').value;
+                const limitBehaviorGroup = document.getElementById('limitBehaviorGroup');
+                const entryPointGroup = document.getElementById('entryPointGroup');
+                
+                if (entryType === 'ENTRY_LIMIT') {
+                    limitBehaviorGroup.style.display = 'block';
+                    entryPointGroup.style.display = 'block';
+                    document.getElementById('entryPoint').required = true;
+                } else {
+                    limitBehaviorGroup.style.display = 'none';
+                    entryPointGroup.style.display = 'none';
+                    document.getElementById('entryPoint').required = false;
+                }
+            }
+
+            validateForm() {
+                let isValid = true;
+                const errors = [];
+
+                // Get form values
+                const values = this.getFormValues();
+
+                // Validate risk percent
+                if (values.riskPercent <= 0 || values.riskPercent > 100) {
+                    this.showValidation('riskPercent', 'error', 'Risk percent must be between 0.1 and 100');
+                    isValid = false;
+                } else {
+                    this.showValidation('riskPercent', 'success', 'Valid risk percentage');
+                }
+
+                // Validate stop loss requirement for risk calculation
+                if (values.totalVolume == 0 && values.stopLoss <= 0) {
+                    this.showValidation('stopLoss', 'error', 'Stop Loss required when using Risk Percent mode');
+                    isValid = false;
+                }
+
+                // Validate entry point for limit orders
+                if (values.entryType === 'ENTRY_LIMIT' && values.entryPoint <= 0) {
+                    this.showValidation('entryPoint', 'error', 'Entry Point required for Limit orders');
+                    isValid = false;
+                } else if (values.entryType === 'ENTRY_LIMIT' && values.entryPoint > 0) {
+                    this.showValidation('entryPoint', 'success', 'Valid entry point');
+                }
+
+                // Validate price relationships (basic validation)
+                if (values.stopLoss > 0 && values.entryPoint > 0) {
+                    if (values.plan === 'PLAN_LONG' && values.stopLoss >= values.entryPoint) {
+                        this.showValidation('stopLoss', 'error', 'Stop Loss for LONG must be below entry price');
+                        isValid = false;
+                    } else if (values.plan === 'PLAN_SHORT' && values.stopLoss <= values.entryPoint) {
+                        this.showValidation('stopLoss', 'error', 'Stop Loss for SHORT must be above entry price');
+                        isValid = false;
+                    } else if (values.stopLoss > 0) {
+                        this.showValidation('stopLoss', 'success', 'Valid stop loss level');
+                    }
+                }
+
+                // Validate take profit sequence
+                this.validateTakeProfits(values);
+
+                // Update risk calculation
+                this.updateRiskCalculation(values);
+
+                this.isValid = isValid;
+                this.updateValidationStatus(isValid);
+                
+                return isValid;
+            }
+
+            validateTakeProfits(values) {
+                const tps = [values.tp1, values.tp2, values.tp3, values.tp4, values.tp5];
+                let lastTP = values.entryPoint || 0;
+                
+                for (let i = 0; i < tps.length; i++) {
+                    if (tps[i] > 0) {
+                        const fieldId = `tp${i + 1}`;
+                        
+                        if (values.plan === 'PLAN_LONG') {
+                            if (tps[i] <= lastTP) {
+                                this.showValidation(fieldId, 'error', `TP${i + 1} must be above previous level for LONG`);
+                            } else {
+                                this.showValidation(fieldId, 'success', `Valid TP${i + 1} level`);
+                                lastTP = tps[i];
+                            }
+                        } else {
+                            if (lastTP > 0 && tps[i] >= lastTP) {
+                                this.showValidation(fieldId, 'error', `TP${i + 1} must be below previous level for SHORT`);
+                            } else {
+                                this.showValidation(fieldId, 'success', `Valid TP${i + 1} level`);
+                                lastTP = tps[i];
+                            }
+                        }
+                    }
+                }
+            }
+
+            updateRiskCalculation(values) {
+                const riskCalc = document.getElementById('riskCalculation');
+                
+                if (values.totalVolume > 0) {
+                    riskCalc.innerHTML = `Fixed Volume Mode: ${values.totalVolume} lots`;
+                } else if (values.stopLoss > 0 && values.entryPoint > 0) {
+                    const riskDistance = Math.abs(values.entryPoint - values.stopLoss);
+                    const riskAmount = 10000 * (values.riskPercent / 100); // Assuming 10k account
+                    
+                    riskCalc.innerHTML = `
+                        Risk Distance: ${riskDistance.toFixed(5)}<br>
+                        Risk Amount: $${riskAmount.toFixed(2)}<br>
+                        Risk Percent: ${values.riskPercent}%
+                    `;
+                } else {
+                    riskCalc.innerHTML = 'Enter entry price and stop loss to calculate risk';
+                }
+            }
+
+            showValidation(fieldId, type, message) {
+                const validationDiv = document.getElementById(`${fieldId}-validation`);
+                validationDiv.className = `validation-message validation-${type}`;
+                validationDiv.textContent = message;
+                validationDiv.style.display = 'block';
+            }
+
+            hideValidation(fieldId) {
+                const validationDiv = document.getElementById(`${fieldId}-validation`);
+                validationDiv.style.display = 'none';
+            }
+
+            updateValidationStatus(isValid) {
+                this.validationStatus.className = `status-indicator ${isValid ? 'status-valid' : 'status-invalid'}`;
+                this.exportBtn.disabled = !isValid;
+            }
+
+            getFormValues() {
+                const formData = new FormData(this.form);
+                const values = {};
+                
+                for (let [key, value] of formData.entries()) {
+                    if (['entryPoint', 'stopLoss', 'totalVolume', 'riskPercent', 'tp1', 'tp2', 'tp3', 'tp4', 'tp5', 'slippage'].includes(key)) {
+                        values[key] = parseFloat(value) || 0;
+                    } else {
+                        values[key] = value;
+                    }
+                }
+                
+                return values;
+            }
+
+            validateAndGenerate() {
+                if (this.validateForm()) {
+                    this.generateMT4Output();
+                }
+            }
+
+            generateMT4Output() {
+                const values = this.getFormValues();
+                
+                const mt4Code = `
+//+------------------------------------------------------------------+
+//|                    PlanWithRisk Input Parameters                 |
+//|                         Generated Configuration                  |
+//+------------------------------------------------------------------+
+
+// === TRADE SETUP ===
+TradeSymbol = ${this.getEnumValue(values.tradeSymbol)};        // Symbol to Trade
+Plan = ${this.getEnumValue(values.plan)};                     // Direction: LONG/SHORT
+EntryType = ${this.getEnumValue(values.entryType)};           // Entry Type
+LimitBehavior = ${this.getEnumValue(values.limitBehavior)};   // Limit Behavior
+EntryPoint = ${values.entryPoint};                            // Entry Price
+
+// === RISK MANAGEMENT ===
+StopLoss = ${values.stopLoss};                                // Stop Loss Price
+TotalVolume = ${values.totalVolume};                          // Fixed Volume
+RiskPercent = ${values.riskPercent};                          // Risk Percent of Equity
+
+// === TAKE PROFITS ===
+TP_1 = ${values.tp1};                                         // Take Profit 1
+TP_2 = ${values.tp2};                                         // Take Profit 2
+TP_3 = ${values.tp3};                                         // Take Profit 3
+TP_4 = ${values.tp4};                                         // Take Profit 4
+TP_5 = ${values.tp5};                                         // Take Profit 5
+
+// === SETTINGS ===
+Slippage = ${values.slippage};                                // Slippage
+OrderComment = "${values.orderComment}";                     // Order Comment
+
+//+------------------------------------------------------------------+
+//| Trading Plan Summary                                             |
+//+------------------------------------------------------------------+
+/*
+SYMBOL: ${values.tradeSymbol}
+DIRECTION: ${values.plan}
+ENTRY TYPE: ${values.entryType}
+ENTRY PRICE: ${values.entryPoint}
+STOP LOSS: ${values.stopLoss}
+RISK: ${values.riskPercent}% (${values.totalVolume > 0 ? values.totalVolume + ' lots fixed' : 'calculated'})
+
+TAKE PROFITS:
+${values.tp1 > 0 ? `TP1: ${values.tp1}` : ''}
+${values.tp2 > 0 ? `TP2: ${values.tp2}` : ''}
+${values.tp3 > 0 ? `TP3: ${values.tp3}` : ''}
+${values.tp4 > 0 ? `TP4: ${values.tp4}` : ''}
+${values.tp5 > 0 ? `TP5: ${values.tp5}` : ''}
+
+Generated: ${new Date().toLocaleString()}
+*/`;
+
+                this.output.textContent = mt4Code;
+            }
+
+            getEnumValue(value) {
+                const enumMap = {
+                    'SYMBOL_CURRENT': '0',
+                    'SYMBOL_EURUSD': '1',
+                    'SYMBOL_GBPUSD': '2',
+                    'SYMBOL_USDJPY': '3',
+                    'SYMBOL_USDCHF': '4',
+                    'SYMBOL_AUDUSD': '5',
+                    'SYMBOL_USDCAD': '6',
+                    'SYMBOL_NZDUSD': '7',
+                    'SYMBOL_EURGBP': '8',
+                    'SYMBOL_EURJPY': '9',
+                    'SYMBOL_GBPJPY': '10',
+                    'SYMBOL_XAUUSD': '11',
+                    'SYMBOL_XAGUSD': '12',
+                    'SYMBOL_US30': '13',
+                    'SYMBOL_SPX500': '14',
+                    'SYMBOL_NDX100': '15',
+                    'PLAN_LONG': '0',
+                    'PLAN_SHORT': '1',
+                    'ENTRY_LIMIT': '0',
+                    'ENTRY_MARKET': '1',
+                    'LIMIT_STANDARD': '0',
+                    'LIMIT_BREAKOUT': '1'
+                };
+                
+                return enumMap[value] || value;
+            }
+
+            clearForm() {
+                this.form.reset();
+                document.getElementById('riskPercent').value = '2.0';
+                document.getElementById('totalVolume').value = '0';
+                document.getElementById('slippage').value = '-1';
+                document.getElementById('orderComment').value = 'PlanWithRisk';
+                
+                // Hide all validation messages
+                const validationMessages = document.querySelectorAll('.validation-message');
+                validationMessages.forEach(msg => msg.style.display = 'none');
+                
+                this.output.textContent = '// Click "Validate Plan" to generate MT4 input parameters...';
+                this.updateValidationStatus(false);
+                this.toggleLimitFields();
+            }
+
+            exportToMT4() {
+                if (!this.isValid) {
+                    alert('Please validate the trading plan first!');
+                    return;
+                }
+
+                // Copy to clipboard
+                navigator.clipboard.writeText(this.output.textContent).then(() => {
+                    alert('MT4 configuration copied to clipboard!\n\nPaste this into your MetaTrader 4 Expert Advisor input parameters.');
+                }).catch(err => {
+                    console.error('Failed to copy: ', err);
+                    alert('Copy failed. Please manually select and copy the generated code.');
+                });
+            }
+        }
+
+        // Initialize the trading plan validator when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new TradingPlanValidator();
+        });
+    </script>
+</body>
+</html>
