@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlanWithRisk - Trading Plan Interface v1.4</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .version-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+
+        .changelog {
+            background: rgba(76, 175, 80, 0.1);
+            border: 1px solid rgba(76, 175, 80, 0.3);
+            border-radius: 10px;
+            padding: 10px 15px;
+            margin-top: 10px;
+            font-size: 0.85em;
+        }
+
+        .form-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .form-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            border-left: 4px solid #2a5298;
+        }
+
+        .section-title {
+            font-size: 1.3em;
+            color: #2a5298;
+            margin-bottom: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title::before {
+            content: "⚙️";
+            margin-right: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #2a5298;
+            box-shadow: 0 0 0 3px rgba(42, 82, 152, 0.1);
+        }
+
+        /* Symbol search functionality */
+        .symbol-search-container {
+            position: relative;
+        }
+
+        .symbol-search {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .symbol-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+
+        .symbol-option {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+
+        .symbol-option:hover {
+            background: #f0f0f0;
+        }
+
+        .symbol-option:last-child {
+            border-bottom: none;
+        }
+
+        .validation-message {
+            margin-top: 5px;
+            padding: 8px;
+            border-radius: 5px;
+            font-size: 12px;
+            display: none;
+        }
+
+        .validation-error {
+            background: #ffe6e6;
+            color: #d32f2f;
+            border: 1px solid #ffcdd2;
+        }
+
+        .validation-success {
+            background: #e8f5e8;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+
+        .validation-warning {
+            background: #fff3e0;
+            color: #f57c00;
+            border: 1px solid #ffcc02;
+        }
+
+        .output-section {
+            background: #263238;
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 15px;
+            font-family: 'Courier New', monospace;
+            margin-top: 20px;
+            min-height: 300px;
+            overflow-y: auto;
+        }
+
+        .output-title {
+            color: #81c784;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #2a5298, #1e3c72);
+            color: white;
+            box-shadow: 0 5px 15px rgba(42, 82, 152, 0.3);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(42, 82, 152, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #757575, #424242);
+            color: white;
+            box-shadow: 0 5px 15px rgba(117, 117, 117, 0.3);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(117, 117, 117, 0.4);
+        }
+
+        .btn-export {
+            background: linear-gradient(45deg, #4caf50, #388e3c);
+            color: white;
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .btn-export:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+        }
+
+        .btn-import {
+            background: linear-gradient(45deg, #9c27b0, #7b1fa2);
+            color: white;
+            box-shadow: 0 5px 15px rgba(156, 39, 176, 0.3);
+        }
+
+        .btn-import:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(156, 39, 176, 0.4);
+        }
+
+        .btn-info {
+            background: linear-gradient(45deg, #ff9800, #f57c00);
+            color: white;
+            box-shadow: 0 5px 15px rgba(255, 152, 0, 0.3);
+        }
+
+        .btn-info:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 152, 0, 0.4);
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-valid { background: #4caf50; }
+        .status-invalid { background: #f44336; }
+        .status-warning { background: #ff9800; }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 30px;
+            border: none;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .instructions-content {
+            line-height: 1.6;
+        }
+
+        .instructions-content h3 {
+            color: #2a5298;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .instructions-content h4 {
+            color: #1976d2;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .instructions-content ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .instructions-content li {
+            margin-bottom: 8px;
+        }
+
+        .instructions-content code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .highlight-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+
+        .new-features-box {
+            background: #e8f5e8;
+            border-left: 4px solid #4caf50;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .modal-content {
+                margin: 10% auto;
+                width: 95%;
+                padding: 20px;
+            }
+        }
+
+        .risk-calculator {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+
+        .risk-result {
+            font-weight: bold;
+            color: #1976d2;
+            margin-top: 10px;
+        }
+
+        .file-input-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .file-input {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .symbol-count {
+            font-size: 0.8em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .loading-indicator {
+            display: none;
+            text-align: center;
+            color: #2a5298;
+            font-style: italic;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 PlanWithRisk</h1>
+            <p>Advanced Trading Plan Configuration Interface</p>
+            <div class="version-badge">Version 1.4</div>
+            <div class="changelog">
+                ✨ New: Smart .set filename format • Previous features: Dynamic symbols, Import/Export
+            </div>
+        </div>
+
+        <div class="form-container">
+            <form id="tradingPlanForm">
+                <div class="form-grid">
+                    <!-- Trade Setup Section -->
+                    <div class="form-section">
+                        <h3 class="section-title">Trade Setup</h3>
+                        
+                        <div class="form-group">
+                            <label for="tradeSymbol">Symbol to Trade:</label>
+                            <div class="symbol-search-container">
+                                <input type="text" id="tradeSymbol" name="tradeSymbol" class="symbol-search" 
+                                       placeholder="Type to search symbols..." autocomplete="off">
+                                <div class="symbol-dropdown" id="symbolDropdown"></div>
+                            </div>
+                            <div class="symbol-count" id="symbolCount">Loading symbols...</div>
+                            <div class="validation-message" id="tradeSymbol-validation"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="plan">Direction:</label>
+                            <select id="plan" name="plan">
+                                <option value="PLAN_LONG">LONG (Buy)</option>
+                                <option value="PLAN_SHORT">SHORT (Sell)</option>
+                            </select>
+                            <div class="validation-message" id="plan-validation"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="entryType">Entry Type:</label>
+                            <select id="entryType" name="entryType">
+                                <option value="ENTRY_LIMIT">LIMIT Order</option>
+                                <option value="ENTRY_MARKET">MARKET Order</option>
+                            </select>
+                            <div class="validation-message" id="entryType-validation"></div>
+                        </div>
+
+                        <div class="form-group" id="limitBehaviorGroup">
+                            <label for="limitBehavior">Limit Behavior:</label>
+                            <select id="limitBehavior" name="limitBehavior">
+                                <option value="LIMIT_STANDARD">Standard Limit</option>
+                                <option value="LIMIT_BREAKOUT">Breakout Limit</option>
+                            </select>
+                            <div class="validation-message" id="limitBehavior-validation"></div>
+                        </div>
+
+                        <div class="form-group" id="entryPointGroup">
+                            <label for="entryPoint">Entry Price:</label>
+                            <input type="number" id="entryPoint" name="entryPoint" step="0.00001" placeholder="Entry price (ignored if Market)">
+                            <div class="validation-message" id="entryPoint-validation"></div>
+                        </div>
+                    </div>
+
+                    <!-- Risk Management Section -->
+                    <div class="form-section">
+                        <h3 class="section-title">Risk Management</h3>
+                        
+                        <div class="form-group">
+                            <label for="stopLoss">Stop Loss Price:</label>
+                            <input type="number" id="stopLoss" name="stopLoss" step="0.00001" placeholder="Stop loss price">
+                            <div class="validation-message" id="stopLoss-validation"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="totalVolume">Fixed Volume (0 = use Risk%):</label>
+                            <input type="number" id="totalVolume" name="totalVolume" step="0.001" value="0" min="0">
+                            <div class="validation-message" id="totalVolume-validation"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="riskPercent">Risk Percent of Equity:</label>
+                            <input type="number" id="riskPercent" name="riskPercent" step="0.1" value="2.0" min="0.1" max="100">
+                            <div class="validation-message" id="riskPercent-validation"></div>
+                        </div>
+
+                        <div class="risk-calculator">
+                            <strong>Risk Calculator:</strong>
+                            <div class="risk-result" id="riskCalculation">
+                                Enter values to see risk calculation
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Take Profits Section -->
+                    <div class="form-section">
+                        <h3 class="section-title">Take Profits</h3>
+                        
+                        <div class="form-group">
+                            <label for="tp1">Take Profit 1:</label>
+                            <input type="number" id="tp1" name="tp1" step="0.00001" placeholder="First take profit level">
+                            <div class="validation-message" id="tp1-validation"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="tp2">Take Profit 2:</label>
+                            <input type="number" id="tp2" name="tp2" step="0.00001" placeholder="Second take profit level">
+                            <div class="validation-message" id="tp2-validation"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="tp3">Take Profit 3:</label>
+                            <input type="number" id="tp3" name="tp3" step="0.00001" placeholder="Third take profit level">
+                            <div class="validation-message" id="tp3-validation"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="tp4">Take Profit 4:</label>
+                            <input type="number" id="tp4" name="tp4" step="0.00001" placeholder="Fourth take profit level">
+                            <div class="validation-message" id="tp4-validation"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="tp5">Take Profit 5:</label>
+                            <input type="number" id="tp5" name="tp5" step="0.00001" placeholder="Fifth take profit level">
+                            <div class="validation-message" id="tp5-validation"></div>
+                        </div>
+                    </div>
+
+                    <!-- Settings Section -->
+                    <div class="form-section">
+                        <h3 class="section-title">Settings</h3>
+                        
+                        <div class="form-group">
+                            <label for="slippage">Slippage (-1 = auto):</label>
+                            <input type="number" id="slippage" name="slippage" value="-1" min="-1">
+                            <div class="validation-message" id="slippage-validation"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="orderComment">Order Comment:</label>
+                            <input type="text" id="orderComment" name="orderComment" value="PlanWithRisk" maxlength="50">
+                            <div class="validation-message" id="orderComment-validation"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button type="button" class="btn btn-primary" id="validateBtn">
+                        <span class="status-indicator status-invalid" id="validationStatus"></span>
+                        Validate Plan
+                    </button>
+                    <div class="file-input-container">
+                        <input type="file" id="importFile" class="file-input" accept=".set" />
+                        <button type="button" class="btn btn-import" id="importBtn">📁 Import .set</button>
+                    </div>
+                    <button type="button" class="btn btn-export" id="exportBtn" disabled>💾 Download .set</button>
+                    <button type="button" class="btn btn-secondary" id="clearBtn">🔄 Clear Form</button>
+                    <button type="button" class="btn btn-info" id="instructionsBtn">📖 Instructions</button>
+                </div>
+            </form>
+
+            <div class="loading-indicator" id="loadingIndicator">Processing...</div>
+
+            <div class="output-section">
+                <div class="output-title">📁 MetaTrader 4 SET File Configuration</div>
+                <pre id="mt4Output">// Click "Validate Plan" to generate MT4 .set file parameters...</pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- Instructions Modal -->
+    <div id="instructionsModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeModal">&times;</span>
+            <div class="instructions-content">
+                <h2 style="color: #2a5298; text-align: center; margin-bottom: 30px;">📖 PlanWithRisk v1.4 - Instructions</h2>
+                
+                <div class="new-features-box">
+                    <strong>🆕 New in Version 1.4:</strong>
+                    <ul>
+                        <li><strong>Smart .set Filename Format:</strong> Automatically generates descriptive filenames with format: SYMBOLDirEntBehYYMMDDHHMM.set</li>
+                        <li><strong>Direction Indicators:</strong> Lgn (Long) or Sht (Short) in filename</li>
+                        <li><strong>Entry Type:</strong> Lim (Limit) or Mkt (Market) in filename</li>
+                        <li><strong>Behavior Type:</strong> Std (Standard) or Brk (Breakout) in filename</li>
+                        <li><strong>Timestamp:</strong> Automatic date/time stamp in filename (YYMMDDHHNN)</li>
+                    </ul>
+                </div>
+
+                <h3>🎯 Overview</h3>
+                <p>PlanWithRisk is an advanced trading plan configuration interface that generates MetaTrader 4 compatible .set files for automated trading. This tool helps you create professional trading setups with proper risk management.</p>
+
+                <h3>📋 How to Use</h3>
+                
+                <h4>1. Symbol Selection</h4>
+                <ul>
+                    <li><strong>Dynamic Search:</strong> Start typing to search through hundreds of available symbols</li>
+                    <li><strong>Real-time Filtering:</strong> The dropdown shows matching symbols as you type</li>
+                    <li><strong>Symbol Count:</strong> See how many symbols are available</li>
+                    <li><strong>Auto-completion:</strong> Click on any symbol to select it</li>
+                </ul>
+
+                <h4>2. Trade Setup</h4>
+                <ul>
+                    <li><strong>Direction:</strong> Choose LONG (Buy) or SHORT (Sell)</li>
+                    <li><strong>Entry Type:</strong> Select between LIMIT or MARKET order</li>
+                    <li><strong>Limit Behavior:</strong> Only appears for LIMIT orders - choose Standard or Breakout behavior</li>
+                    <li><strong>Entry Price:</strong> Set your desired entry price (only for LIMIT orders)</li>
+                </ul>
+
+                <h4>3. Risk Management</h4>
+                <ul>
+                    <li><strong>Stop Loss:</strong> Set your stop loss price level</li>
+                    <li><strong>Fixed Volume:</strong> Set to 0 to use risk percentage, or specify fixed lot size</li>
+                    <li><strong>Risk Percent:</strong> Percentage of account equity to risk (recommended: 1-3%)</li>
+                </ul>
+
+                <h4>4. Take Profits</h4>
+                <ul>
+                    <li>Set up to 5 take profit levels</li>
+                    <li>For LONG trades: TP levels must be above entry price</li>
+                    <li>For SHORT trades: TP levels must be below entry price</li>
+                    <li>Each TP level must be progressive (TP2 > TP1, etc.)</li>
+                </ul>
+
+                <h3>🔧 New Features Guide</h3>
+
+                <h4>📁 Import .set Files</h4>
+                <ol>
+                    <li>Click "Import .set" button</li>
+                    <li>Select a .set file from your computer</li>
+                    <li>The form will automatically populate with the file's values</li>
+                    <li>All fields will be validated automatically</li>
+                </ol>
+
+                <h4>💾 Download .set Files</h4>
+                <ol>
+                    <li>Configure your trading plan</li>
+                    <li>Click "Validate Plan" to check configuration</li>
+                    <li>Click "Download .set" to save the file</li>
+                    <li>Choose your preferred download location</li>
+                    <li>The filename will be automatically generated with format: SYMBOLDirEntBehYYMMDDHHMM.set (e.g., EURUSDLgnLimStd2508081150.set)</li>
+                </ol>
+
+                <h4>🔍 Symbol Search</h4>
+                <ul>
+                    <li>Type any part of a symbol name to search</li>
+                    <li>Search is case-insensitive and matches partial text</li>
+                    <li>Click on any result to select it</li>
+                    <li>Press Escape to close the dropdown</li>
+                </ul>
+
+                <h3>🔧 Validation System</h3>
+                <p>Enhanced validation with color-coded indicators:</p>
+                <ul>
+                    <li><span style="color: #4caf50;">●</span> <strong>Green:</strong> Valid configuration</li>
+                    <li><span style="color: #f44336;">●</span> <strong>Red:</strong> Error - needs correction</li>
+                    <li><span style="color: #ff9800;">●</span> <strong>Orange:</strong> Warning - check recommended</li>
+                </ul>
+
+                <h3>📁 MT4 Integration</h3>
+                <p>The generated .set file can be used in MetaTrader 4:</p>
+                <ul>
+                    <li>Download the .set file using the "Download .set" button</li>
+                    <li>Save it in your <code>MT4/MQL4/Presets/</code> folder</li>
+                    <li>Load in EA settings by clicking "Load" button</li>
+                    <li>Select your downloaded .set file</li>
+                </ul>
+
+                <div class="highlight-box">
+                    <strong>💡 Pro Tips:</strong>
+                    <ul>
+                        <li>Use Ctrl+Enter to quickly validate your plan</li>
+                        <li>Press F1 to open these instructions</li>
+                        <li>The symbol search supports partial matching (e.g., "XAU" finds "XAUUSD")</li>
+                        <li>Import existing .set files to quickly modify trading plans</li>
+                    </ul>
+                </div>
+
+                <h3>⚠️ Important Notes</h3>
+                <ul>
+                    <li>Symbol list is loaded automatically from symbols.md file</li>
+                    <li>Entry price is ignored for MARKET orders</li>
+                    <li>Stop Loss is required when using Risk Percent mode</li>
+                    <li>Take Profit levels are optional but recommended</li>
+                    <li>Always backtest your strategy before live trading</li>
+                    <li>File downloads respect your browser's download settings</li>
+                </ul>
+
+                <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+                    <strong>PlanWithRisk v1.4</strong><br>
+                    <em>Professional Trading Plan Configuration Interface</em><br>
+                    <small>Enhanced with smart filename format and improved file management</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class TradingPlanValidator {
+            constructor() {
+                this.form = document.getElementById('tradingPlanForm');
+                this.validationStatus = document.getElementById('validationStatus');
+                this.exportBtn = document.getElementById('exportBtn');
+                this.output = document.getElementById('mt4Output');
+                this.isValid = false;
+                this.symbols = [];
+                this.currentSelectedSymbol = '';
+                
+                this.initializeEventListeners();
+                this.loadSymbols();
+                this.toggleLimitFields();
+            }
+
+            async loadSymbols() {
+                const loadingIndicator = document.getElementById('loadingIndicator');
+                const symbolCount = document.getElementById('symbolCount');
+                
+                try {
+                    loadingIndicator.style.display = 'block';
+                    symbolCount.textContent = 'Loading symbols...';
+                    
+                    // Lista hardcodeada de símbolos
+                    const symbolsText = 'AAVUSD, ADAUSD, ALGUSD, ALIUSD, ANKUSD, APEUSD, ARWUSD, ATMUSD, AUDCAD, AUDCHF, AUDJPY, AUDNZD, AUDUSD, AUS200, AVAUSD, AXSUSD, Alphabet, Amazon, AppleInc, BARUSD, BATUSD, BCHUSD, BNBUSD, Berkshire, Bitcoin, CADCHF, CADJPY, CADMXN, CELUSD, CEOUSD, CH50, CHFDKK, CHFJPY, CHFNOK, CHFSEK, CHRUSD, CHZUSD, CNEUSD, CNHJPY, COMUSD, COTUSD, CRVUSD, CTSUSD, DE30, DKKSEK, DOGUSD, DOTUSD, DSHUSD, DYDUSD, EGLUSD, ENJUSD, EOSUSD, ES35, ETCUSD, EUR50, EURAUD, EURCAD, EURCHF, EURCNH, EURCZK, EURDKK, EURGBP, EURHKD, EURHUF, EURILS, EURJPY, EURMXN, EURNOK, EURNZD, EURPLN, EURSEK, EURSGD, EURTRY, EURUSD, EURZAR, Ethereum, FA40, FILUSD, FLWUSD, FTMUSD, GALUSD, GBPAUD, GBPCAD, GBPCHF, GBPDKK, GBPHKD, GBPHUF, GBPJPY, GBPNOK, GBPNZD, GBPPLN, GBPSEK, GBPSGD, GBPTRY, GBPUSD, GBPZAR, GMTUSD, GRTUSD, HK50, HKDJPY, IMXUSD, INCUSD, IOSUSD, IOTUSD, JP225, JPMorgan, KAVUSD, KNCUSD, KSMUSD, LNKUSD, LPTUSD, LRCUSD, LiteCoin, MANUSD, MKRUSD, MTCUSD, MXNJPY, MetaInc, Microsoft, NEOUSD, NERUSD, NOKSEK, NZDCAD, NZDCHF, NZDJPY, NZDSGD, NZDUSD, NatGas, NvidiaCorp, OMGUSD, ONEUSD, ONTUSD, PEPUSD, QTMUSD, RENUSD, RSRUSD, RVNUSD, SANUSD, SHBUSD, SKLUSD, SNXUSD, SOLUSD, STOUSD, SUSUSD, SW20, SXPUSD, TETUSD, TRXUSD, Tesla, UK100, UKOil, UNIUSD, US100, US2000, US30, US500, USDCAD, USDCHF, USDCNH, USDCZK, USDDKK, USDHKD, USDHUF, USDILS, USDJPY, USDMXN, USDNOK, USDPLN, USDRON, USDRUB, USDSEK, USDSGD, USDTHB, USDTRY, USDZAR, USOil, VECUSD, WOOUSD, Wallmart, XAGUSD, XAUEUR, XAUUSD, XEMUSD, XLMUSD, XMRUSD, XPDUSD, XPTUSD, XRPUSD, XTZUSD, YFIUSD, ZARJPY, ZECUSD, ZENUSD, ZILUSD, ZRXUSD';
+                    
+                    // Parse symbols from the text (comma-separated)
+                    this.symbols = symbolsText.split(',').map(symbol => symbol.trim()).filter(symbol => symbol.length > 0);
+                    
+                    // Sort symbols alphabetically
+                    this.symbols.sort();
+                    
+                    symbolCount.textContent = `${this.symbols.length} symbols loaded`;
+                    loadingIndicator.style.display = 'none';
+                    
+                    // Set default symbol
+                    if (this.symbols.length > 0) {
+                        document.getElementById('tradeSymbol').placeholder = 'Type to search symbols... (e.g., XAUUSD, EURUSD)';
+                    }
+                    
+                } catch (error) {
+                    console.error('Error loading symbols:', error);
+                    symbolCount.textContent = 'Error loading symbols - using basic set';
+                    // Use the same symbols from symbols.md as fallback
+                    symbolsText = 'AAVUSD, ADAUSD, ALGUSD, ALIUSD, ANKUSD, APEUSD, ARWUSD, ATMUSD, AUDCAD, AUDCHF, AUDJPY, AUDNZD, AUDUSD, AUS200, AVAUSD, AXSUSD, Alphabet, Amazon, AppleInc, BARUSD, BATUSD, BCHUSD, BNBUSD, Berkshire, Bitcoin, CADCHF, CADJPY, CADMXN, CELUSD, CEOUSD, CH50, CHFDKK, CHFJPY, CHFNOK, CHFSEK, CHRUSD, CHZUSD, CNEUSD, CNHJPY, COMUSD, COTUSD, CRVUSD, CTSUSD, DE30, DKKSEK, DOGUSD, DOTUSD, DSHUSD, DYDUSD, EGLUSD, ENJUSD, EOSUSD, ES35, ETCUSD, EUR50, EURAUD, EURCAD, EURCHF, EURCNH, EURCZK, EURDKK, EURGBP, EURHKD, EURHUF, EURILS, EURJPY, EURMXN, EURNOK, EURNZD, EURPLN, EURSEK, EURSGD, EURTRY, EURUSD, EURZAR, Ethereum, FA40, FILUSD, FLWUSD, FTMUSD, GALUSD, GBPAUD, GBPCAD, GBPCHF, GBPDKK, GBPHKD, GBPHUF, GBPJPY, GBPNOK, GBPNZD, GBPPLN, GBPSEK, GBPSGD, GBPTRY, GBPUSD, GBPZAR, GMTUSD, GRTUSD, HK50, HKDJPY, IMXUSD, INCUSD, IOSUSD, IOTUSD, JP225, JPMorgan, KAVUSD, KNCUSD, KSMUSD, LNKUSD, LPTUSD, LRCUSD, LiteCoin, MANUSD, MKRUSD, MTCUSD, MXNJPY, MetaInc, Microsoft, NEOUSD, NERUSD, NOKSEK, NZDCAD, NZDCHF, NZDJPY, NZDSGD, NZDUSD, NatGas, NvidiaCorp, OMGUSD, ONEUSD, ONTUSD, PEPUSD, QTMUSD, RENUSD, RSRUSD, RVNUSD, SANUSD, SHBUSD, SKLUSD, SNXUSD, SOLUSD, STOUSD, SUSUSD, SW20, SXPUSD, TETUSD, TRXUSD, Tesla, UK100, UKOil, UNIUSD, US100, US2000, US30, US500, USDCAD, USDCHF, USDCNH, USDCZK, USDDKK, USDHKD, USDHUF, USDILS, USDJPY, USDMXN, USDNOK, USDPLN, USDRON, USDRUB, USDSEK, USDSGD, USDTHB, USDTRY, USDZAR, USOil, VECUSD, WOOUSD, Wallmart, XAGUSD, XAUEUR, XAUUSD, XEMUSD, XLMUSD, XMRUSD, XPDUSD, XPTUSD, XRPUSD, XTZUSD, YFIUSD, ZARJPY, ZECUSD, ZENUSD, ZILUSD, ZRXUSD';
+                    this.symbols = symbolsText.split(',').map(symbol => symbol.trim()).filter(symbol => symbol.length > 0);
+                    loadingIndicator.style.display = 'none';
+                }
+            }
+
+            initializeEventListeners() {
+                // Real-time validation on input changes
+                this.form.addEventListener('input', () => this.validateForm());
+                this.form.addEventListener('change', () => this.validateForm());
+                
+                // Button events
+                document.getElementById('validateBtn').addEventListener('click', () => this.validateAndGenerate());
+                document.getElementById('clearBtn').addEventListener('click', () => this.clearForm());
+                document.getElementById('exportBtn').addEventListener('click', () => this.downloadSetFile());
+                document.getElementById('importBtn').addEventListener('click', () => this.triggerImport());
+                document.getElementById('importFile').addEventListener('change', (e) => this.handleImport(e));
+                
+                // Entry type specific handling
+                document.getElementById('entryType').addEventListener('change', () => this.toggleLimitFields());
+                
+                // Symbol search functionality
+                const symbolInput = document.getElementById('tradeSymbol');
+                const symbolDropdown = document.getElementById('symbolDropdown');
+                
+                symbolInput.addEventListener('input', (e) => this.handleSymbolSearch(e));
+                symbolInput.addEventListener('focus', (e) => this.handleSymbolSearch(e));
+                symbolInput.addEventListener('blur', () => {
+                    // Delay hiding to allow click on dropdown items
+                    setTimeout(() => {
+                        symbolDropdown.style.display = 'none';
+                    }, 200);
+                });
+                
+                // Instructions modal events
+                document.getElementById('instructionsBtn').addEventListener('click', () => this.showInstructions());
+                document.getElementById('closeModal').addEventListener('click', () => this.hideInstructions());
+                
+                // Close modal when clicking outside
+                window.addEventListener('click', (event) => {
+                    const modal = document.getElementById('instructionsModal');
+                    if (event.target === modal) {
+                        this.hideInstructions();
+                    }
+                });
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', (event) => {
+                    if (!event.target.closest('.symbol-search-container')) {
+                        document.getElementById('symbolDropdown').style.display = 'none';
+                    }
+                });
+            }
+
+            handleSymbolSearch(event) {
+                const query = event.target.value.toUpperCase();
+                const dropdown = document.getElementById('symbolDropdown');
+                
+                if (query.length === 0) {
+                    dropdown.style.display = 'none';
+                    return;
+                }
+                
+                const filteredSymbols = this.symbols.filter(symbol => 
+                    symbol.toUpperCase().includes(query)
+                ).slice(0, 10); // Limit to 10 results
+                
+                if (filteredSymbols.length === 0) {
+                    dropdown.style.display = 'none';
+                    return;
+                }
+                
+                dropdown.innerHTML = '';
+                filteredSymbols.forEach(symbol => {
+                    const option = document.createElement('div');
+                    option.className = 'symbol-option';
+                    option.textContent = symbol;
+                    option.addEventListener('click', () => {
+                        document.getElementById('tradeSymbol').value = symbol;
+                        this.currentSelectedSymbol = symbol;
+                        dropdown.style.display = 'none';
+                        this.validateForm();
+                    });
+                    dropdown.appendChild(option);
+                });
+                
+                dropdown.style.display = 'block';
+            }
+
+            triggerImport() {
+                document.getElementById('importFile').click();
+            }
+
+            async handleImport(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                if (!file.name.endsWith('.set')) {
+                    alert('❌ Please select a .set file');
+                    return;
+                }
+                
+                const loadingIndicator = document.getElementById('loadingIndicator');
+                loadingIndicator.style.display = 'block';
+                
+                try {
+                    const text = await this.readFileAsText(file);
+                    this.parseAndLoadSetFile(text);
+                    alert('✅ Successfully imported ' + file.name);
+                } catch (error) {
+                    console.error('Import error:', error);
+                    alert('❌ Error importing file: ' + error.message);
+                } finally {
+                    loadingIndicator.style.display = 'none';
+                    // Reset file input
+                    event.target.value = '';
+                }
+            }
+
+            readFileAsText(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = e => resolve(e.target.result);
+                    reader.onerror = e => reject(new Error('Failed to read file'));
+                    reader.readAsText(file);
+                });
+            }
+
+            parseAndLoadSetFile(setFileContent) {
+                const lines = setFileContent.split('\n');
+                const values = {};
+                
+                // Parse each line
+                lines.forEach(line => {
+                    const trimmed = line.trim();
+                    if (trimmed && trimmed.includes('=')) {
+                        const [key, value] = trimmed.split('=', 2);
+                        values[key.trim()] = value.trim();
+                    }
+                });
+                
+                // Map values to form fields
+                this.loadValuesIntoForm(values);
+            }
+
+            loadValuesIntoForm(values) {
+                // Clear form first
+                this.clearForm();
+                
+                // Map the values
+                if (values.TradeSymbol) {
+                    // If it's a number, convert back to symbol name
+                    if (!isNaN(values.TradeSymbol)) {
+                        // Handle enum values - for now, just use the symbol if available
+                        if (values.TradeSymbol === '0') {
+                            document.getElementById('tradeSymbol').value = 'CURRENT';
+                        }
+                    } else {
+                        document.getElementById('tradeSymbol').value = values.TradeSymbol;
+                        this.currentSelectedSymbol = values.TradeSymbol;
+                    }
+                }
+                
+                if (values.Plan) {
+                    document.getElementById('plan').value = values.Plan === '0' ? 'PLAN_LONG' : 'PLAN_SHORT';
+                }
+                
+                if (values.EntryType) {
+                    document.getElementById('entryType').value = values.EntryType === '0' ? 'ENTRY_LIMIT' : 'ENTRY_MARKET';
+                }
+                
+                if (values.LimitBehavior) {
+                    document.getElementById('limitBehavior').value = values.LimitBehavior === '0' ? 'LIMIT_STANDARD' : 'LIMIT_BREAKOUT';
+                }
+                
+                // Numeric values
+                const numericFields = {
+                    'EntryPoint': 'entryPoint',
+                    'StopLoss': 'stopLoss',
+                    'TotalVolume': 'totalVolume',
+                    'RiskPercent': 'riskPercent',
+                    'TP_1': 'tp1',
+                    'TP_2': 'tp2',
+                    'TP_3': 'tp3',
+                    'TP_4': 'tp4',
+                    'TP_5': 'tp5',
+                    'Slippage': 'slippage'
+                };
+                
+                Object.keys(numericFields).forEach(key => {
+                    if (values[key] !== undefined) {
+                        const formField = document.getElementById(numericFields[key]);
+                        if (formField) {
+                            formField.value = values[key];
+                        }
+                    }
+                });
+                
+                // Text fields
+                if (values.OrderComment) {
+                    document.getElementById('orderComment').value = values.OrderComment;
+                }
+                
+                // Update UI
+                this.toggleLimitFields();
+                this.validateForm();
+            }
+
+            showInstructions() {
+                document.getElementById('instructionsModal').style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            }
+
+            hideInstructions() {
+                document.getElementById('instructionsModal').style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+
+            toggleLimitFields() {
+                const entryType = document.getElementById('entryType').value;
+                const limitBehaviorGroup = document.getElementById('limitBehaviorGroup');
+                const entryPointGroup = document.getElementById('entryPointGroup');
+                
+                if (entryType === 'ENTRY_LIMIT') {
+                    limitBehaviorGroup.style.display = 'block';
+                    entryPointGroup.style.display = 'block';
+                    document.getElementById('entryPoint').required = true;
+                } else {
+                    limitBehaviorGroup.style.display = 'none';
+                    entryPointGroup.style.display = 'none';
+                    document.getElementById('entryPoint').required = false;
+                }
+            }
+
+            validateForm() {
+                let isValid = true;
+                const errors = [];
+
+                // Get form values
+                const values = this.getFormValues();
+
+                // Validate symbol
+                const symbolValue = document.getElementById('tradeSymbol').value.toUpperCase();
+                if (symbolValue.length === 0) {
+                    this.showValidation('tradeSymbol', 'error', 'Please select a trading symbol');
+                    isValid = false;
+                } else if (!this.symbols.map(s => s.trim()).includes(symbolValue) && !this.symbols.map(s => s.trim().toUpperCase()).includes(symbolValue) && symbolValue !== 'CURRENT') {
+                    this.showValidation('tradeSymbol', 'warning', 'Symbol not found in available list');
+                } else {
+                    this.showValidation('tradeSymbol', 'success', 'Valid trading symbol');
+                }
+
+                // Validate risk percent
+                if (values.riskPercent <= 0 || values.riskPercent > 100) {
+                    this.showValidation('riskPercent', 'error', 'Risk percent must be between 0.1 and 100');
+                    isValid = false;
+                } else {
+                    this.showValidation('riskPercent', 'success', 'Valid risk percentage');
+                }
+
+                // Validate stop loss requirement for risk calculation
+                if (values.totalVolume == 0 && values.stopLoss <= 0) {
+                    this.showValidation('stopLoss', 'error', 'Stop Loss required when using Risk Percent mode');
+                    isValid = false;
+                }
+
+                // Validate entry point for limit orders
+                if (values.entryType === 'ENTRY_LIMIT' && values.entryPoint <= 0) {
+                    this.showValidation('entryPoint', 'error', 'Entry Point required for Limit orders');
+                    isValid = false;
+                } else if (values.entryType === 'ENTRY_LIMIT' && values.entryPoint > 0) {
+                    this.showValidation('entryPoint', 'success', 'Valid entry point');
+                }
+
+                // Validate price relationships
+                if (values.stopLoss > 0 && values.entryPoint > 0) {
+                    if (values.plan === 'PLAN_LONG' && values.stopLoss >= values.entryPoint) {
+                        this.showValidation('stopLoss', 'error', 'Stop Loss for LONG must be below entry price');
+                        isValid = false;
+                    } else if (values.plan === 'PLAN_SHORT' && values.stopLoss <= values.entryPoint) {
+                        this.showValidation('stopLoss', 'error', 'Stop Loss for SHORT must be above entry price');
+                        isValid = false;
+                    } else if (values.stopLoss > 0) {
+                        this.showValidation('stopLoss', 'success', 'Valid stop loss level');
+                    }
+                }
+
+                // Validate take profit sequence
+                this.validateTakeProfits(values);
+
+                // Update risk calculation
+                this.updateRiskCalculation(values);
+
+                this.isValid = isValid;
+                this.updateValidationStatus(isValid);
+                
+                return isValid;
+            }
+
+            validateTakeProfits(values) {
+                const tps = [values.tp1, values.tp2, values.tp3, values.tp4, values.tp5];
+                let lastTP = values.entryPoint || 0;
+                
+                for (let i = 0; i < tps.length; i++) {
+                    if (tps[i] > 0) {
+                        const fieldId = `tp${i + 1}`;
+                        
+                        if (values.plan === 'PLAN_LONG') {
+                            if (tps[i] <= lastTP) {
+                                this.showValidation(fieldId, 'error', `TP${i + 1} must be above previous level for LONG`);
+                            } else {
+                                this.showValidation(fieldId, 'success', `Valid TP${i + 1} level`);
+                                lastTP = tps[i];
+                            }
+                        } else {
+                            if (lastTP > 0 && tps[i] >= lastTP) {
+                                this.showValidation(fieldId, 'error', `TP${i + 1} must be below previous level for SHORT`);
+                            } else {
+                                this.showValidation(fieldId, 'success', `Valid TP${i + 1} level`);
+                                lastTP = tps[i];
+                            }
+                        }
+                    }
+                }
+            }
+
+            updateRiskCalculation(values) {
+                const riskCalc = document.getElementById('riskCalculation');
+                
+                if (values.totalVolume > 0) {
+                    riskCalc.innerHTML = `Fixed Volume Mode: ${values.totalVolume} lots`;
+                } else if (values.stopLoss > 0 && values.entryPoint > 0) {
+                    const riskDistance = Math.abs(values.entryPoint - values.stopLoss);
+                    const riskAmount = 10000 * (values.riskPercent / 100); // Assuming 10k account
+                    
+                    riskCalc.innerHTML = `
+                        Risk Distance: ${riskDistance.toFixed(5)}<br>
+                        Risk Amount: ${riskAmount.toFixed(2)}<br>
+                        Risk Percent: ${values.riskPercent}%
+                    `;
+                } else {
+                    riskCalc.innerHTML = 'Enter entry price and stop loss to calculate risk';
+                }
+            }
+
+            showValidation(fieldId, type, message) {
+                const validationDiv = document.getElementById(`${fieldId}-validation`);
+                validationDiv.className = `validation-message validation-${type}`;
+                validationDiv.textContent = message;
+                validationDiv.style.display = 'block';
+            }
+
+            hideValidation(fieldId) {
+                const validationDiv = document.getElementById(`${fieldId}-validation`);
+                validationDiv.style.display = 'none';
+            }
+
+            updateValidationStatus(isValid) {
+                this.validationStatus.className = `status-indicator ${isValid ? 'status-valid' : 'status-invalid'}`;
+                this.exportBtn.disabled = !isValid;
+            }
+
+            getFormValues() {
+                const formData = new FormData(this.form);
+                const values = {};
+                
+                // Get symbol from input field directly
+                values.tradeSymbol = document.getElementById('tradeSymbol').value.toUpperCase();
+                
+                for (let [key, value] of formData.entries()) {
+                    if (key === 'tradeSymbol') {
+                        continue; // Already handled above
+                    }
+                    if (['entryPoint', 'stopLoss', 'totalVolume', 'riskPercent', 'tp1', 'tp2', 'tp3', 'tp4', 'tp5', 'slippage'].includes(key)) {
+                        values[key] = parseFloat(value) || 0;
+                    } else {
+                        values[key] = value;
+                    }
+                }
+                
+                return values;
+            }
+
+            validateAndGenerate() {
+                if (this.validateForm()) {
+                    this.generateMT4Output();
+                }
+            }
+
+            generateMT4Output() {
+                const values = this.getFormValues();
+                
+                // Generate MT4 .set file format
+                const mt4SetFile = `TradeSymbol=${values.tradeSymbol || '0'}
+Plan=${this.getEnumValue(values.plan)}
+EntryType=${this.getEnumValue(values.entryType)}
+LimitBehavior=${this.getEnumValue(values.limitBehavior)}
+EntryPoint=${values.entryPoint}
+StopLoss=${values.stopLoss}
+TotalVolume=${values.totalVolume}
+RiskPercent=${values.riskPercent}
+TP_1=${values.tp1}
+TP_2=${values.tp2}
+TP_3=${values.tp3}
+TP_4=${values.tp4}
+TP_5=${values.tp5}
+Slippage=${values.slippage}
+OrderComment=${values.orderComment}`;
+
+                this.output.textContent = mt4SetFile;
+            }
+
+            getEnumValue(value) {
+                const enumMap = {
+                    'PLAN_LONG': '0',
+                    'PLAN_SHORT': '1',
+                    'ENTRY_LIMIT': '0',
+                    'ENTRY_MARKET': '1',
+                    'LIMIT_STANDARD': '0',
+                    'LIMIT_BREAKOUT': '1'
+                };
+                
+                return enumMap[value] || value;
+            }
+
+            // Nueva función para generar nombres de archivo
+            generateFileName(values) {
+                // Obtener la fecha y hora actual
+                const now = new Date();
+                const year = now.getFullYear().toString().slice(-2);
+                const month = (now.getMonth() + 1).toString().padStart(2, '0');
+                const day = now.getDate().toString().padStart(2, '0');
+                const hour = now.getHours().toString().padStart(2, '0');
+                const minute = now.getMinutes().toString().padStart(2, '0');
+                
+                // Mapear dirección (Lgn/Sht)
+                const direction = values.plan === 'PLAN_LONG' ? 'Lgn' : 'Sht';
+                
+                // Mapear tipo de entrada (Lim/Mkt)
+                const entryType = values.entryType === 'ENTRY_LIMIT' ? 'Lim' : 'Mkt';
+                
+                // Mapear comportamiento (Std/Brk)
+                const behavior = values.limitBehavior === 'LIMIT_STANDARD' ? 'Std' : 'Brk';
+                
+                // Construir nombre: SYMBOLDirEntBehYYMMDDHHMM.set
+                return `${values.tradeSymbol}${direction}${entryType}${behavior}${year}${month}${day}${hour}${minute}.set`;
+            }
+
+            downloadSetFile() {
+                if (!this.isValid) {
+                    alert('Please validate the trading plan first!');
+                    return;
+                }
+
+                const values = this.getFormValues();
+                const filename = this.generateFileName(values);
+                
+                // Create blob and download
+                const blob = new Blob([this.output.textContent], { type: 'text/plain' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                
+                alert(`✅ ${filename} downloaded successfully!\n\n💡 Place this file in your MT4/MQL4/Presets/ folder to use with Expert Advisors.`);
+            }
+
+            clearForm() {
+                this.form.reset();
+                document.getElementById('riskPercent').value = '2.0';
+                document.getElementById('totalVolume').value = '0';
+                document.getElementById('slippage').value = '-1';
+                document.getElementById('orderComment').value = 'PlanWithRisk';
+                document.getElementById('tradeSymbol').value = '';
+                this.currentSelectedSymbol = '';
+                
+                // Hide all validation messages
+                const validationMessages = document.querySelectorAll('.validation-message');
+                validationMessages.forEach(msg => msg.style.display = 'none');
+                
+                this.output.textContent = '// Click "Validate Plan" to generate MT4 .set file parameters...';
+                this.updateValidationStatus(false);
+                this.toggleLimitFields();
+                
+                // Update risk calculation
+                document.getElementById('riskCalculation').innerHTML = 'Enter values to see risk calculation';
+                
+                // Hide symbol dropdown
+                document.getElementById('symbolDropdown').style.display = 'none';
+            }
+        }
+
+        // Initialize the trading plan validator when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new TradingPlanValidator();
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (event) => {
+            // ESC to close modal or dropdown
+            if (event.key === 'Escape') {
+                const modal = document.getElementById('instructionsModal');
+                const dropdown = document.getElementById('symbolDropdown');
+                
+                if (modal.style.display === 'block') {
+                    document.getElementById('closeModal').click();
+                } else if (dropdown.style.display === 'block') {
+                    dropdown.style.display = 'none';
+                }
+            }
+            
+            // Ctrl+Enter to validate
+            if (event.ctrlKey && event.key === 'Enter') {
+                event.preventDefault();
+                document.getElementById('validateBtn').click();
+            }
+            
+            // F1 for instructions
+            if (event.key === 'F1') {
+                event.preventDefault();
+                document.getElementById('instructionsBtn').click();
+            }
+            
+            // Ctrl+O for import
+            if (event.ctrlKey && event.key === 'o') {
+                event.preventDefault();
+                document.getElementById('importBtn').click();
+            }
+            
+            // Ctrl+S for export (if valid)
+            if (event.ctrlKey && event.key === 's') {
+                event.preventDefault();
+                const exportBtn = document.getElementById('exportBtn');
+                if (!exportBtn.disabled) {
+                    exportBtn.click();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
